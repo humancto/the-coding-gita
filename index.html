@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Way of Code: Coding Yogi's Path</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&family=Source+Code+Pro:wght@400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 50%, #2d1b69 100%);
+            color: #e6e6fa;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative; /* Needed for z-index context */
+            z-index: 1; /* Ensure content is above canvas */
+        }
+        
+        header {
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden; /* Hide overflow from canvas */
+            min-height: 400px; /* Ensure header has enough height for the canvas */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #three-js-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place behind header content */
+            background-color: transparent; /* Ensure background gradient shows through */
+        }
+        
+        .lotus-symbol {
+            font-size: 4rem;
+            animation: pulse 2s infinite alternate;
+            display: inline-block;
+            position: relative; /* Ensure it's above the canvas */
+            z-index: 1;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); color: #ffd700; }
+            100% { transform: scale(1.05); color: #ffeb3b; }
+        }
+        
+        h1 {
+            font-family: 'Crimson Text', serif;
+            font-size: 3.5rem;
+            color: #4ecdc4;
+            margin-top: 0.5rem;
+            text-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b0c4de;
+            margin-top: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-tagline { /* New style for the added text */
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: #a0a0c0;
+            margin-top: 1rem;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+        
+        .hero-quote {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.8rem;
+            font-style: italic;
+            color: #f0f8ff;
+            margin: 2rem auto;
+            max-width: 900px; /* Increased from 800px to 900px */
+            padding: 1.5rem;
+            border-left: 5px solid #ffd700;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-quote em {
+            display: block;
+            margin-top: 0.8rem;
+            font-size: 1.4rem;
+            color: #b0c4de;
+        }
+        
+        .interactive-section {
+            padding: 3rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #4ecdc4;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        }
+        
+        .wisdom-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            background: rgba(78, 205, 196, 0.2);
+            color: #e6e6fa;
+            border: 1px solid #4ecdc4;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .tab-button:hover {
+            background: rgba(78, 205, 196, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.2);
+        }
+        
+        .tab-button.active {
+            background: #4ecdc4;
+            color: #0f0f23;
+            border-color: #4ecdc4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.4);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            margin: 1rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .sub-navigation {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .sub-nav-button {
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .sub-nav-button:hover {
+            background: rgba(255, 215, 0, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.2);
+            animation: pulse-small 0.5s infinite alternate; /* New animation */
+        }
+
+        @keyframes pulse-small {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.03); }
+        }
+        
+        .sub-nav-button.active {
+            background: #ffd700;
+            color: #0f0f23;
+            border-color: #ffd700;
+            box-shadow: 0 3px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .content-section {
+            display: none;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            margin: 1rem auto;
+            max-width: 1000px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Slower transition for content */
+        }
+        
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .chapter-content {
+            padding: 1.5rem;
+        }
+        
+        .verse-sanskrit {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.6rem;
+            color: #b0c4de;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .verse-translation {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #d1d1e0;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .programming-application, .practice-exercise {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .programming-application h4, .practice-exercise h4 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .interactive-code {
+            font-family: 'Source Code Pro', monospace;
+            background: #1a1a2e;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #4ecdc4;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .interactive-code:hover {
+            border-color: #ffd700; /* Subtle highlight on hover */
+            background-color: #1e1e33;
+        }
+        
+        .practice-button, .chapter-button {
+            background: #4ecdc4;
+            color: #0f0f23;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+        
+        .chapter-button {
+            background: #ff6b6b;
+            color: #0f0f23;
+            margin-left: 10px;
+        }
+        
+        .practice-button:hover, .chapter-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chapter-button:hover {
+            background: #ff4d4d;
+        }
+        
+        .code-editor-input {
+            width: 100%;
+            height: 100px;
+            background: #0f0f23;
+            border: 1px solid #4ecdc4;
+            color: #e6e6fa;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            resize: vertical;
+        }
+        
+        .interactive-code-output {
+            background: #0f0f23;
+            color: #e6e6fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 0.9rem;
+            min-height: 50px;
+            border: 1px dashed #b0c4de;
+            transition: background-color 0.3s ease;
+        }
+        
+        /* Floating elements for background */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .floating-lotus {
+            position: absolute;
+            font-size: 3rem;
+            color: rgba(255, 215, 0, 0.1);
+            animation: float 10s infinite ease-in-out;
+            transform: translateY(100vh);
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Sadhana & Eightfold Path styles */
+        .sadhana-grid, .eightfold-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .sadhana-item, .eightfold-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .sadhana-item:hover, .eightfold-item:hover {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+        }
+        
+        .sadhana-item h4, .eightfold-item h4 {
+            color: #4ecdc4;
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .sadhana-item p, .eightfold-item p {
+            color: #d1d1e0;
+            font-size: 0.95rem;
+        }
+        
+        .timer-display {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 1.8rem;
+            color: #ffd700;
+            font-family: 'Source Code Pro', monospace;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #ffd700;
+        }
+        
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 1.5rem;
+        }
+        
+        .timer-controls button {
+            background: #ff6b6b;
+            color: #0f0f23;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        
+        .timer-controls button:hover {
+            background: #ff4d4d;
+            transform: translateY(-3px);
+        }
+        
+        /* Code Challenges */
+        .challenge-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .challenge-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .challenge-card h4 {
+            color: #ffd700;
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .challenge-card p {
+            color: #d1d1e0;
+            margin-bottom: 1rem;
+        }
+        
+        .challenge-card pre {
+            background: #1a1a2e;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #ffd700;
+        }
+        
+        .run-challenge-button {
+            background: #4ecdc4;
+            color: #0f0f23;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .run-challenge-button:hover {
+            background: #3ac0b7;
+            transform: translateY(-3px);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #b0c4de;
+            font-size: 0.9rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+        
+            .hero-quote {
+                font-size: 1.5rem;
+            }
+        
+            .tab-button, .sub-nav-button {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+            }
+        
+            .content-section {
+                padding: 1.5rem;
+            }
+        
+            .verse-sanskrit {
+                font-size: 1.4rem;
+            }
+        
+            .verse-translation {
+                font-size: 1.2rem;
+            }
+        
+            .programming-application, .practice-exercise {
+                padding: 1rem;
+            }
+        
+            .sadhana-grid, .eightfold-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+        
+            .hero-quote {
+                font-size: 1.2rem;
+                padding: 1rem;
+            }
+        
+            .tab-button {
+                width: 100%;
+            }
+        
+            .sub-navigation {
+                flex-direction: column;
+                align-items: center;
+            }
+        
+            .sub-nav-button {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements" id="floatingElements"></div>
+
+    <div class="container">
+        <header>
+            <div id="three-js-canvas-container"></div>
+            <div class="lotus-symbol">🪷</div>
+            <h1>The Way of Code</h1>
+            <p class="subtitle">Coding Yogi's Path</p>
+            <p class="header-tagline">Inspired by the Ancient Wisdom of Bhagavad Gita</p> <div class="hero-quote">
+                "योगः कर्मसु कौशलम्" <br>
+                <em>"Yoga is skill in action"</em> — Bhagavad Gita 2.50
+            </div>
+        </header>
+
+        <section class="interactive-section">
+            <h2 class="section-title">Sacred Learning Paths</h2>
+
+            <div class="wisdom-tabs">
+                <button class="tab-button active" onclick="showTab('sadhana', event)">The Developer's Daily Sadhana</button>
+                <button class="tab-button" onclick="showTab('eightfold', event)">Eightfold Path of Programming</button>
+                <button class="tab-button" onclick="showTab('programmer-gita', event)">The Programmer's Gita</button>
+                <button class="tab-button" onclick="showTab('code-challenges', event)">Code Challenges</button>
+            </div>
+
+            <div id="sadhana" class="tab-content active">
+                <div class="sadhana-grid">
+                    <div class="sadhana-item">
+                        <h4>1. ब्रह्म मुहूर्त कोडिंग (Early Morning Coding)</h4>
+                        <p>Starting your day with focused coding, when the mind is fresh and distractions are minimal. This is your most productive and meditative time.</p>
+                    </div>
+                    <div class="sadhana-item">
+                        <h4>2. ध्यान (Meditation / Deep Work)</h4>
+                        <p>Engaging in uninterrupted, deep work sessions. Minimize notifications, focus intently on one task, and enter a flow state, treating it as a form of active meditation.</p>
+                    </div>
+                    <div class="sadhana-item">
+                        <h4>3. स्वध्याय (Self-Study / Learning)</h4>
+                        <p>Dedicate time daily to continuous learning: reading documentation, exploring new technologies, studying algorithms, or reviewing best practices. Never stop evolving.</p>
+                    </div>
+                    <div class="sadhana-item">
+                        <h4>4. सेवा (Service / Open Source)</h4>
+                        <p>Contribute to open-source projects, mentor junior developers, or help colleagues. Use your skills for the benefit of the wider community without expectation of direct reward.</p>
+                    </div>
+                    <div class="sadhana-item">
+                        <h4>5. कर्म योग (Detached Action)</h4>
+                        <p>Code with full effort and dedication, but remain unattached to the outcome (success or failure of the project, praise or criticism). Focus on the quality of your work.</p>
+                    </div>
+                    <div class="sadhana-item">
+                        <h4>6. आहार (Mindful Consumption)</h4>
+                        <p>Be mindful of what you "consume": not just food, but information, entertainment, and social media. Choose inputs that nourish your mind and body, not distract or drain them.</p>
+                    </div>
+                    <div class="sadhana-item">
+                        <h4>7. प्रकृति संरक्षण (Environmental Stewardship)</h4>
+                        <p>Consider the environmental impact of your code and infrastructure. Strive for energy-efficient solutions and sustainable practices in development.</p>
+                    </div>
+                    <div class="sadhana-item">
+                        <h4>8. निद्रा (Restful Sleep)</h4>
+                        <p>Prioritize adequate and restful sleep. A well-rested mind is essential for clarity, creativity, and effective problem-solving.</p>
+                    </div>
+                </div>
+                <div class="meditation-timer">
+                    <h4 style="color: #4ecdc4;">Sacred Coding Timer</h4>
+                    <div class="timer-display" id="timerDisplay">00:00:00</div>
+                    <div class="timer-controls">
+                        <button id="startTimerButton" onclick="startTimer()">Start</button>
+                        <button id="pauseTimerButton" onclick="pauseTimer()" disabled>Pause</button>
+                        <button id="resetTimerButton" onclick="resetTimer()" disabled>Reset</button>
+                    </div>
+                    <p style="color: #d1d1e0; margin-top: 1rem;">Use this timer for focused coding sessions or mindful breaks.</p>
+                </div>
+            </div>
+
+            <div id="eightfold" class="tab-content">
+                <div class="eightfold-grid">
+                    <div class="eightfold-item">
+                        <h4>1. सम्यक् संकल्प (Right Intention)</h4>
+                        <p>Before writing a single line of code, clearly define your purpose and intention. Is it to solve a real problem? To build something robust and useful? To simplify complexity?</p>
+                    </div>
+                    <div class="eightfold-item">
+                        <h4>2. सम्यक् स्मृति (Right Mindfulness)</h4>
+                        <p>Be fully present while coding. Pay attention to detail, understand the current state of the system, and be aware of potential side effects or implications of your changes.</p>
+                    </div>
+                    <div class="eightfold-item">
+                        <h4>3. सम्यक् आजीव (Right Livelihood)</h4>
+                        <p>Ensure your work aligns with ethical principles. Avoid projects that cause harm, infringe on privacy, or promote injustice. Use your skills for positive impact.</p>
+                    </div>
+                    <div class="eightfold-item">
+                        <h4>4. सम्यक् व्यायाम (Right Effort)</h4>
+                        <p>Put in consistent, focused effort. Don't procrastinate, but also don't overwork. Balance intense coding sprints with periods of rest and recovery. Strive for mastery, not just completion.</p>
+                    </div>
+                    <div class="eightfold-item">
+                        <h4>5. सम्यक् दृष्टि (Right Understanding)</h4>
+                        <p>Understand the problem domain, the underlying technologies, and the architectural patterns deeply. Don't just copy-paste solutions; comprehend why they work.</p>
+                    </div>
+                    <div class="eightfold-item">
+                        <h4>6. सम्यक् वाक् (Right Speech/Communication)</h4>
+                        <p>Communicate clearly and concisely in code (comments, variable names), in documentation, and with your team. Avoid jargon, ambiguity, and unnecessary complexity.</p>
+                    </div>
+                    <div class="eightfold-item">
+                        <h4>7. सम्यक् कर्मान्त (Right Action)</h4>
+                        <p>Write clean, testable, and maintainable code. Practice good version control, participate in code reviews, and strive for elegant solutions that are easy to understand and extend.</p>
+                    </div>
+                    <div class="eightfold-item">
+                        <h4>8. सम्यक् समाधि (Right Concentration/Flow)</h4>
+                        <p>Achieve a state of deep concentration (flow state) where you are fully immersed in the coding task. This leads to highly productive and creative output, a meditative experience.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="programmer-gita" class="tab-content">
+                <div class="sub-navigation">
+                    <button class="sub-nav-button active" onclick="showGitaChapter(1, event)">Ch 1</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(2, event)">Ch 2</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(3, event)">Ch 3</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(4, event)">Ch 4</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(5, event)">Ch 5</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(6, event)">Ch 6</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(7, event)">Ch 7</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(8, event)">Ch 8</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(9, event)">Ch 9</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(10, event)">Ch 10</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(11, event)">Ch 11</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(12, event)">Ch 12</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(13, event)">Ch 13</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(14, event)">Ch 14</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(15, event)">Ch 15</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(16, event)">Ch 16</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(17, event)">Ch 17</button>
+                    <button class="sub-nav-button" onclick="showGitaChapter(18, event)">Ch 18</button>
+                </div>
+
+                <div id="chapter1" class="content-section active">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 1: The Coder's Dilemma (अर्जुन विषाद योग)</h3>
+                        <div class="verse-sanskrit">धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः</div>
+                        <div class="verse-translation">"In the field of dharma, in the field of code, assembled and ready to program..."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Modern Arjuna's Dilemma</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Like Arjuna facing his kinsmen, every programmer faces ethical dilemmas: choosing between a quick, dirty fix and a long-term, maintainable solution; prioritizing profit over user well-being; or navigating conflicts between personal values and project requirements. This chapter acknowledges the inner conflict and confusion that often precedes true action.</p>
+                            <div class="interactive-code" id="arjunaDilemmaCode">// Conceptual code for understanding ethical dilemmas in development
+function chooseSolution(optionA_quickFix, optionB_ethicalLongTerm) {
+  if (userNeeds > profit && maintainability > shortTermGain) {
+    return optionB_ethicalLongTerm; // The path of Dharma
+  } else {
+    return optionA_quickFix; // The path of temporary gain
+  }
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('arjunaDilemmaCode')">Simulate Dilemma</button>
+                            <div id="arjunaDilemmaOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Reflection Exercise</h4>
+                            <p>Think of a recent ethical dilemma you faced in your coding or work. How did you resolve it? Could you have approached it differently, guided by principles of dharma?</p>
+                            <textarea id="dilemmaReflectionInput" class="code-editor-input" placeholder="Describe your dilemma..."></textarea>
+                            <button class="chapter-button" onclick="recordDilemma()">Record My Dilemma</button>
+                            <div id="dilemmaReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter2" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 2: The Eternal Code (सांख्य योग)</h3>
+                        <div class="verse-sanskrit">नासतो विद्यते भावो नाभावो विद्यते सतः</div>
+                        <div class="verse-translation">"The temporary has no reality; the eternal never ceases to be"</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Eternal Principles in Code</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Technologies, frameworks, and languages constantly change, but certain fundamental principles of computation, logic, and good engineering (like abstraction, modularity, efficiency, readability) remain eternal. Focus on understanding these timeless concepts rather than getting lost in the fleeting trends of the temporary.</p>
+                            <div class="interactive-code" id="eternalCode">// Conceptual code to emphasize eternal principles over temporary syntax
+class EternalPrinciples {
+  constructor() {
+    this.readability = true;
+    this.modularity = true;
+    this.efficiency = true;
+    this.testability = true;
+  }
+  applyTo(language) {
+    console.log(`Applying eternal principles to ${language} code.`);
+    // ... code to enforce these principles regardless of syntax
+  }
+}
+const myCodingPhilosophy = new EternalPrinciples();</div>
+                            <button class="practice-button" onclick="runConceptualCode('eternalCode')">Simulate Eternal Focus</button>
+                            <div id="eternalCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Eternal Coding Meditation</h4>
+                            <p>What principles guide your programming that transcend any specific technology or framework? How do you apply them consistently?</p>
+                            <textarea id="eternalPrinciplesInput" class="code-editor-input" placeholder="List your eternal principles..."></textarea>
+                            <button class="chapter-button" onclick="identifyEternalPrinciples()">Identify My Eternal Principles</button>
+                            <div id="eternalPrinciplesOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter3" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 3: Karma Yoga Programming (कर्म योग)</h3>
+                        <div class="verse-sanskrit">कर्मण्येवाधिकारस्ते मा फलेषु कदाचन</div>
+                        <div class="verse-translation">"You have the right to perform action, but not to the fruits of action"</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Detached Programming</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Focus on writing the best possible code, solving the problem with dedication and skill, but without excessive attachment to the outcome – whether it becomes a huge success, gets refactored next month, or receives specific praise. Your duty is the action; the results are not entirely within your control. This minimizes stress and enhances pure creativity.</p>
+                            <div class="interactive-code" id="karmaYogaCode">// Example of detached action in coding
+function submitPullRequest(code) {
+  performThoroughReview(code);
+  writeClearComments(code);
+  // Do not constantly check merge status or seek immediate validation
+  console.log("Pull request submitted. Action performed to the best of my ability, outcomes left to the process.");
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('karmaYogaCode')">Simulate Karma Yoga</button>
+                            <div id="karmaYogaOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Karma Yoga Challenge</h4>
+                            <p>For one week, practice detached programming. Choose a task, give it your full effort, and upon completion, mentally release attachment to its fate. Observe how this affects your stress levels and enjoyment.</p>
+                            <textarea id="karmaYogaChallengeInput" class="code-editor-input" placeholder="Reflect on your Karma Yoga experience..."></textarea>
+                            <button class="chapter-button" onclick="startKarmaYogaChallenge()">Begin Challenge</button>
+                            <div id="karmaYogaChallengeOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter4" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 4: Divine Knowledge in Code (ज्ञान कर्म संन्यास योग)</h3>
+                        <div class="verse-sanskrit">यदा यदा हि धर्मस्य ग्लानिर्भवति भारत</div>
+                        <div class="verse-translation">"Whenever dharma declines and adharma rises, I manifest to restore balance"</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Avatar Principle in Code</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Just as divine consciousness manifests to restore dharma, conscious programmers emerge when technological 'adharma' (e.g., privacy invasion, algorithmic bias, malicious software) rises. Your skill and knowledge are tools to restore balance, build ethical systems, and serve true progress. View yourself as an agent of positive change.</p>
+                            <div class="interactive-code" id="avatarCode">// Conceptualizing a programmer's "avatar mission"
+function restoreDigitalDharma(problemArea) {
+  console.log(`Identifying ${problemArea} where digital dharma has declined.`);
+  // Apply knowledge and ethical principles to create solutions
+  console.log("Developing solutions to restore balance and ethical integrity.");
+  // This is a continuous process of learning and applying wisdom.
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('avatarCode')">Simulate Avatar Mission</button>
+                            <div id="avatarCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Avatar Mission Discovery</h4>
+                            <p>Identify a technological imbalance that disturbs you. How could your programming skills be used to bring balance or a more ethical approach to that area?</p>
+                            <textarea id="avatarMissionInput" class="code-editor-input" placeholder="Describe your avatar mission..."></textarea>
+                            <button class="chapter-button" onclick="discoverAvatarMission()">Discover My Mission</button>
+                            <div id="avatarMissionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter5" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 5: The Yoga of Renunciation of Action (कर्मसंन्यासयोग)</h3>
+                        <div class="verse-sanskrit">संन्यासः कर्मयोगश्च निःश्रेयसकरावुभौ</div>
+                        <div class="verse-translation">"Renunciation of action and action in devotion both lead to liberation"</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Letting Go of Code (and Ownership)</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">The liberated programmer understands when to refactor (renounce old code), when to delete (complete renunciation of a feature no longer serving purpose), and when to contribute without attachment to ownership (action in devotion, sharing your code freely). Code flows through us, not from us alone; it's a shared creation.</p>
+                            <div class="interactive-code" id="renunciationCode">// Conceptual code for understanding when to refactor, delete, or contribute selflessly
+function shouldRefactor(code) { /* ... logic based on readability, maintainability ... */ return true; }
+function shouldDelete(feature) { /* ... logic based on obsolescence, negative impact ... */ return true; }
+function contributeSelflessly(codeContribution) {
+  console.log(`Contributing: ${codeContribution.name} with intent: ${codeContribution.intent}`);
+  return codeContribution.intent === 'service' && codeContribution.ego === 'none';
+}
+// Example usage:
+// if (shouldRefactor(myOldCode)) console.log("Refactoring for the good of the project.");
+// if (shouldDelete(redundantFeature)) console.log("Feature removed for clarity and efficiency.");
+// contributeSelflessly({ name: "New Utility", intent: "service", ego: "none" });
+</div>
+                            <button class="practice-button" onclick="runConceptualCode('renunciationCode')">Simulate Renunciation</button>
+                            <div id="renunciationCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Renunciation Reflection</h4>
+                            <p>Think about a piece of code you are hesitant to change or delete, even though it might be necessary for the project's health. What attachments are you holding onto? Can you practice "letting go"?</p>
+                            <textarea id="renunciationReflectionInput" class="code-editor-input" placeholder="Reflect on your attachments to code..."></textarea>
+                            <button class="chapter-button" onclick="reflectOnRenunciation()">Reflect on Renunciation</button>
+                            <div id="renunciationReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter6" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 6: The Yoga of Meditation (ध्यानयोग)</h3>
+                        <div class="verse-sanskrit">युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु</div>
+                        <div class="verse-translation">"Yoga is attained by those who are temperate in eating and recreation, regulated in their actions, and balanced in sleep and wakefulness."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Meditative Coder</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Deep work requires focus and a balanced state. Just as meditation stills the mind, conscious coding requires minimizing distractions, finding flow, and taking regular, restorative breaks. The ideal coding session is a form of active meditation, where the mind is absorbed in the problem, yet aware and balanced.</p>
+                            <div class="interactive-code" id="dhyanaCode">// Conceptual representation of a balanced coding session
+function startMindfulCoding() {
+  setEnvironment('distractionFree');
+  setPosture('ergonomic');
+  setBreathing('deepAndRegular'); // Calms the nervous system
+  beginTask('oneAtATime');
+  trackTime('pomodoroTechnique'); // Structured breaks
+  takeBreaks('regularShort');
+  console.log("Mindful coding session initiated. Enter the flow state.");
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('dhyanaCode')">Simulate Mindful Coding</button>
+                            <div id="dhyanaCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Meditation in Code Challenge</h4>
+                            <p>For your next coding session, consciously apply principles of meditation: focus, presence, and detachment from distractions. Observe how it affects your productivity and mental state.</p>
+                            <textarea id="dhyanaChallengeInput" class="code-editor-input" placeholder="Reflect on your mindful coding session..."></textarea>
+                            <button class="chapter-button" onclick="startDhyanaChallenge()">Begin Dhyana Challenge</button>
+                            <div id="dhyanaChallengeOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter7" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 7: The Yoga of Knowledge and Wisdom (ज्ञानविज्ञानयोग)</h3>
+                        <div class="verse-sanskrit">भूमिरापोऽनलो वायुः खं मनो बुद्धिरेव च</div>
+                        <div class="verse-translation">"Earth, water, fire, air, ether, mind, and intellect—these are the eightfold divisions of My material nature."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Understanding the Layers of Technology</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">True mastery comes from understanding the fundamental layers of technology, from the "earth" of hardware to the "ether" of networks, and the "mind" of algorithms. Superficial knowledge of frameworks is insufficient; seek the underlying wisdom of how systems truly operate, from physics to logic.</p>
+                            <div class="interactive-code" id="jnanaCode">// Conceptual layers of a software system analogous to material nature
+const materialNatureOfTech = [
+  'Hardware (Earth)',        // Physical components
+  'Operating System (Water)',// Foundation for software flow
+  'Network Infrastructure (Fire)', // Data transfer, energy flow
+  'Communication Protocols (Air)', // Inter-system communication
+  'Cloud Platforms (Ether)', // Abstract, pervasive computing space
+  'Algorithms and Logic (Mind)',  // Processing, decision making
+  'Software Architecture (Intellect)' // High-level design, reasoning
+];
+function reflectOnLayers() {
+  console.log("Reflecting on the fundamental layers of technology:");
+  materialNatureOfTech.forEach(layer => console.log(`- ${layer}`));
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('jnanaCode')">Reflect on Layers</button>
+                            <div id="jnanaCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Knowledge Seeking</h4>
+                            <p>Identify one fundamental technology (e.g., TCP/IP, the principles of relational databases, how a CPU works) that you don't fully understand. Make a commitment to learn its core concepts this week, going beyond surface-level usage.</p>
+                            <textarea id="jnanaReflectionInput" class="code-editor-input" placeholder="My knowledge-seeking goal..."></textarea>
+                            <button class="chapter-button" onclick="setJnanaGoal()">Set Knowledge Goal</button>
+                            <div id="jnanaReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter8" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 8: The Yoga of the Imperishable Brahman (अक्षरब्रह्मयोग)</h3>
+                        <div class="verse-sanskrit">अक्षरं ब्रह्म परमं स्वभावोऽध्यात्ममुच्यते</div>
+                        <div class="verse-translation">"The imperishable, transcendental living entity is called Brahman, and his eternal nature is called the self."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Essence of Code</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Beneath the ever-changing syntax and paradigms lies the unchanging essence of computation: logic, information flow, and transformation. Focus on these "imperishable" principles that underpin all coding languages and systems. This understanding allows you to adapt to any new technology without losing your core competence.</p>
+                            <div class="interactive-code" id="aksharaCode">// Conceptual representation of imperishable coding concepts
+const imperishableConcepts = [
+  'Algorithms (step-by-step logic)',
+  'Data Structures (organizing information)',
+  'Abstraction (hiding complexity)',
+  'Modularity (building with reusable parts)',
+  'Efficiency (optimal resource use)',
+  'Concurrency (handling multiple tasks)',
+  'Security (protecting integrity)'
+];
+function contemplateEssence() {
+  console.log("Contemplating the imperishable essence of coding:");
+  imperishableConcepts.forEach(concept => console.log(`- ${concept}`));
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('aksharaCode')">Contemplate Essence</button>
+                            <div id="aksharaCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Finding the Core</h4>
+                            <p>Choose a coding problem you recently solved. Strip away the specific language and libraries you used. Can you describe the core algorithm or logical steps in a language-agnostic way? How does this reveal the "imperishable" aspect of your solution?</p>
+                            <textarea id="aksharaReflectionInput" class="code-editor-input" placeholder="Describe the core logic..."></textarea>
+                            <button class="chapter-button" onclick="reflectOnCoreLogic()">Reflect on Core Logic</button>
+                            <div id="aksharaReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter9" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 9: The Yoga of the King of Knowledge, the King of Secrets (राजविद्याराजगुह्ययोग)</h3>
+                        <div class="verse-sanskrit">मयि सर्वमिदं प्रोतं सूत्रे मणिगणा इव</div>
+                        <div class="verse-translation">"All this universe is pervaded by Me in My unmanifested form, just as pearls are strung on a thread."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Interconnectedness of Code</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Every piece of code, every module, every service is interconnected, forming a larger system. Understanding these relationships and the underlying architecture is the "king of knowledge." The subtle ways these parts interact, often hidden from plain sight, are the "king of secrets." True wisdom comes from perceiving this pervasive interconnectedness.</p>
+                            <div class="interactive-code" id="rajaVidyaCode">// Conceptual visualization of interconnectedness in a software system
+function visualizeSystemArchitecture(modules) {
+  console.log("Visualizing the flow of data and control:");
+  modules.forEach(module => {
+    console.log(`Module: ${module.name} -> interacts with -> ${module.dependencies.join(', ')}`);
+  });
+  console.log("The thread unseen holds all parts together.");
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('rajaVidyaCode')">Visualize Connections</button>
+                            <div id="rajaVidyaCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">System Mapping</h4>
+                            <p>Choose a software project you are familiar with. Try to map out its main components and how they interact with each other. Identify any non-obvious or "secret" dependencies that make the system function as a whole.</p>
+                            <textarea id="rajaVidyaReflectionInput" class="code-editor-input" placeholder="Describe the system map..."></textarea>
+                            <button class="chapter-button" onclick="reflectOnSystem()">Reflect on System Map</button>
+                            <div id="rajaVidyaReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter10" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 10: The Yoga of Divine Glories (विभूतियोग)</h3>
+                        <div class="verse-sanskrit">अहमात्मा गुडाकेश सर्वभूताशयस्थितः</div>
+                        <div class="verse-translation">"I am the Self, O Gudakesha, situated in the hearts of all beings."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Innate Potential of Code</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Just as the divine Self resides in all beings, immense potential lies within code. Recognize the "glories" of well-crafted algorithms, elegant solutions, and the power of technology to transform the world. Nurture this potential in your work, seeing beyond mere functionality to the inherent beauty and impact.</p>
+                            <div class="interactive-code" id="vibhutiCode">// Conceptual recognition of potential and "divine glories" in code
+function identifyDivineGlories(algorithm) {
+  const glories = [];
+  if (algorithm.efficiency === 'high') glories.push('Efficiency');
+  if (algorithm.clarity === 'high') glories.push('Clarity');
+  if (algorithm.impact === 'positiveAndScalable') glories.push('Positive Impact');
+  if (algorithm.elegance === 'high') glories.push('Elegance');
+  if (algorithm.resilience === 'high') glories.push('Resilience');
+  console.log(`Divine glories of this algorithm: ${glories.join(', ')}`);
+  if (glories.length === 0) console.log("No obvious divine glories found. Keep striving for excellence!");
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('vibhutiCode')">Recognize Glories</button>
+                            <div id="vibhutiCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Appreciating Code</h4>
+                            <p>Think about a piece of code (your own or someone else's) that you find particularly impressive or inspiring. What "divine glories" (qualities like elegance, efficiency, robustness, positive impact) does it possess? Reflect on what makes it stand out.</p>
+                            <textarea id="vibhutiReflectionInput" class="code-editor-input" placeholder="Describe the glories of the code..."></textarea>
+                            <button class="chapter-button" onclick="reflectOnGlories()">Reflect on Code Glories</button>
+                            <div id="vibhutiReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter11" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 11: The Yoga of the Vision of the Universal Form (विश्वरूपदर्शनयोग)</h3>
+                        <div class="verse-sanskrit">पश्य मे पार्थ रूपाणि शतशोऽथ सहस्रशः</div>
+                        <div class="verse-translation">"Behold, O Partha, My hundreds and thousands of multifarious, divine forms."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Vastness of Technology</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">The world of technology is immense, ever-expanding, and multifaceted. From embedded systems to quantum computing, from AI to biotechnology, the "universal form" of code is awe-inspiring. Recognize the vastness and diversity of this field and your place within it, with both humility for what you don't know and wonder for what's possible.</p>
+                            <div class="interactive-code" id="vishvarupaCode">// Conceptual exploration of the vastness of tech domains
+const techDomains = [
+  'Artificial Intelligence (AI)',
+  'Blockchain Technology (DLT)',
+  'Cloud Computing (IaaS, PaaS, SaaS)',
+  'Cybersecurity (Threat landscapes)',
+  'Quantum Computing (New paradigms)',
+  'Biotechnology & Bioinformatics',
+  'Internet of Things (IoT)',
+  'Robotics & Automation',
+  'Augmented/Virtual Reality (XR)',
+  'Neurotechnology'
+];
+function contemplateVastness() {
+  console.log("Beholding the universal form of technology:");
+  techDomains.forEach(domain => console.log(`- ${domain}`));
+  console.log("An infinite landscape to learn and contribute to.");
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('vishvarupaCode')">Contemplate Vastness</button>
+                            <div id="vishvarupaCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Exploring New Horizons</h4>
+                            <p>Identify a domain of technology that you know little about but find fascinating. Make a small effort this week to learn something new about it (e.g., watch an introductory video, read an article), appreciating the vastness of the field.</p>
+                            <textarea id="vishvarupaReflectionInput" class="code-editor-input" placeholder="My exploration goal..."></textarea>
+                            <button class="chapter-button" onclick="setExplorationGoal()">Set Exploration Goal</button>
+                            <div id="vishvarupaReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter12" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 12: The Yoga of Devotion (भक्तियोग)</h3>
+                        <div class="verse-sanskrit">मय्येव मन आधत्स्व मयि बुद्धिं निवेशय</div>
+                        <div class="verse-translation">"Just fix your mind upon Me, the Supreme Personality of Godhead, and engage all your intelligence in Me."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Coding with Devotion</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Approach your work with devotion, fixing your mind and intelligence entirely on the task at hand. See your projects as a form of offering, and perform your duties with utmost love, care, and dedication. This devotion transforms mundane coding into a fulfilling spiritual practice.</p>
+                            <div class="interactive-code" id="bhaktiCode">// Conceptual representation of coding with devotion
+function startDevotionalCoding(project) {
+  setMind('focusedOnTask');
+  setIntellect('engagedWithLogicAndCreativity');
+  setAttitude('offeringOfService');
+  beginCoding(project, 'withLoveAndCare');
+  console.log(`Devotional coding for project '${project}' has begun. All faculties are engaged.`);
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('bhaktiCode')">Simulate Devotional Coding</button>
+                            <div id="bhaktiCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Devotion in Action</h4>
+                            <p>Choose a coding task today and approach it with a sense of devotion. Eliminate distractions, focus your mind, and dedicate your full attention to the process. Observe if your experience of coding changes when imbued with this attitude.</p>
+                            <textarea id="bhaktiReflectionInput" class="code-editor-input" placeholder="Reflect on your devotional coding..."></textarea>
+                            <button class="chapter-button" onclick="startBhaktiPractice()">Begin Bhakti Practice</button>
+                            <div id="bhaktiReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter13" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 13: The Yoga of the Distinction Between the Field and the Knower of the Field (क्षेत्रक्षेत्रज्ञविभागयोग)</h3>
+                        <div class="verse-sanskrit">इदं शरीरं कौन्तेय क्षेत्रमित्यभिधीयते</div>
+                        <div class="verse-translation">"This body, O son of Kunti, is called the field, and one who knows this body is called the knower of the field."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Code as the Field, Programmer as the Knower</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">See your codebase, your project, or even the entire technological landscape as the "field" (Kshetra) – a complex, dynamic entity with its own properties and behaviors. You, the programmer, are the "knower of the field" (Kshetrajna) – the conscious observer, interpreter, and manipulator of this field. Understanding this distinction brings objectivity and clarity to your work, allowing you to debug not just code, but also your own biases and assumptions.</p>
+                            <div class="interactive-code" id="kshetraCode">// Conceptual analogy of code as the field (Kshetra)
+const codeField = {
+  structure: 'complex',
+  behavior: 'predictableButSometimesSurprising',
+  properties: ['variables', 'functions', 'classes', 'modules', 'dependencies'],
+  state: 'currentRuntimeState'
+};
+// The programmer (Kshetrajna) observes and interacts:
+function observeCodeField(field) {
+  console.log("Observing the field (codebase):", field.structure, field.state);
+  console.log("Understanding its properties and behavior.");
+  // The knower is distinct from the field it knows.
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('kshetraCode')">Observe the Code Field</button>
+                            <div id="kshetraCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Field and Knower Reflection</h4>
+                            <p>For your current project, identify what constitutes the "field" (e.g., codebase, deployment environment). Then, recognize yourself as the "knower." How does distinguishing between the two help you understand and interact with your work more effectively?</p>
+                            <textarea id="kshetraReflectionInput" class="code-editor-input" placeholder="Reflect on the code as a field..."></textarea>
+                            <button class="chapter-button" onclick="reflectOnKshetra()">Reflect on Field & Knower</button>
+                            <div id="kshetraReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter14" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 14: The Yoga of the Division of the Three Gunas (गुणत्रयविभागयोग)</h3>
+                        <div class="verse-sanskrit">सत्त्वं रजस्तम इति गुणाः प्रकृतिसंभवाः</div>
+                        <div class="verse-translation">"Goodness, passion, and ignorance—these qualities born of material nature bind the embodied living entity in the body."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Understanding the Gunas in Development</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">The three Gunas (Sattva, Rajas, Tamas) influence our programming style and output. <em>Sattva</em> (goodness, purity) manifests as clear, clean, well-documented, and thoroughly tested code; a calm, focused, and cooperative developer. <em>Rajas</em> (passion, activity) can lead to rapid but sometimes messy development, driven by ambition, deadlines, or a desire for quick results, often with associated stress. <em>Tamas</em> (ignorance, inertia) results in procrastination, buggy or poorly understood code, resistance to learning new things, and a general lack of clarity or engagement. Strive for Sattvic coding, recognizing and transcending the influences of Rajas and Tamas.</p>
+                            <div class="interactive-code" id="gunasCode">// Identifying Gunas in code attributes and developer behavior
+function identifyGunasInCode(codebase, developerState) {
+  let gunaAttributes = {};
+  if (codebase.readability > 0.8 && codebase.testCoverage > 0.9 && developerState.calmness > 0.7) gunaAttributes.sattva = 'High';
+  if (codebase.rapidDevelopmentRate > 0.7 && developerState.stressLevel > 0.5) gunaAttributes.rajas = 'High';
+  if (codebase.legacyDebt > 0.5 && codebase.documentation === 'none' && developerState.procrastination > 0.5) gunaAttributes.tamas = 'High';
+  console.log("Guna influences detected:", gunaAttributes);
+  return gunaAttributes;
+}
+// Example usage:
+// identifyGunasInCode({ readability: 0.9, testCoverage: 0.95 }, { calmness: 0.8 }); // Sattvic
+// identifyGunasInCode({ rapidDevelopmentRate: 0.8, bugCount: 0.3 }, { stressLevel: 0.6 }); // Rajasic
+</div>
+                            <button class="practice-button" onclick="runConceptualCode('gunasCode')">Analyze Gunas in Code</button>
+                            <div id="gunasCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Guna Self-Assessment</h4>
+                            <p>Reflect on your typical coding habits and recent projects. When do you find yourself operating predominantly in Sattva, Rajas, or Tamas? How can you consciously cultivate more Sattvic qualities (e.g., focus, clarity, clean code) in your work and your approach?</p>
+                            <textarea id="gunasReflectionInput" class="code-editor-input" placeholder="My Guna self-assessment..."></textarea>
+                            <button class="chapter-button" onclick="reflectOnGunas()">Reflect on Gunas</button>
+                            <div id="gunasReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter15" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 15: The Yoga of the Supreme Person (पुरुषोत्तमयोग)</h3>
+                        <div class="verse-sanskrit">ऊर्ध्वमूलमधःशाखमश्वत्थं प्राहुरव्ययम्</div>
+                        <div class="verse-translation">"They speak of an imperishable Ashvattha tree with its roots upward and its branches downward, whose leaves are the Vedic hymns."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Tree of Technology</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Visualize technology as a vast, inverted tree: its roots (fundamental principles like logic, algorithms, mathematics, data structures, computation theory) are unseen but support everything; its branches (frameworks, libraries, specific languages) spread widely and are constantly evolving. The "leaves" are the ever-changing trends and fleeting specifics. True mastery lies in understanding the roots, not just clinging to the leaves (superficial trends or specific syntaxes). Detach from the illusion of the tree's permanence and seek its source.</p>
+                            <div class="interactive-code" id="purushottamaCode">// Conceptual representation of the tech tree
+const techTree = {
+  roots: ['Logic', 'Algorithms', 'Data Structures', 'Mathematics', 'Computation Theory'],
+  branches: ['JavaScript Frameworks (React, Vue)', 'Python Libraries (TensorFlow, Pandas)', 'Cloud Services (AWS, Azure)', 'AI Models (GPT, Llama)'],
+  leaves: ['Latest trendy library version', 'Specific API endpoints', 'Syntactic sugar']
+};
+function exploreTechTree() {
+  console.log("Exploring the roots (fundamental principles):", techTree.roots.join(', '));
+  console.log("And the ever-evolving branches (frameworks/languages):", techTree.branches.join(', '));
+  console.log("Beware of getting lost in the leaves (fleeting trends).");
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('purushottamaCode')">Explore Tech Tree</button>
+                            <div id="purushottamaCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Root-Level Learning</h4>
+                            <p>Instead of chasing the latest "leaf" (new framework/tool), commit to strengthening your understanding of a fundamental "root" (e.g., how compilers work, network protocols, object-oriented design patterns, functional programming principles). How will this deepen your overall knowledge and adaptability?</p>
+                            <textarea id="purushottamaReflectionInput" class="code-editor-input" placeholder="My root-level learning goal..."></textarea>
+                            <button class="chapter-button" onclick="setPurushottamaGoal()">Set Learning Goal</button>
+                            <div id="purushottamaReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter16" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 16: The Divine and Demoniac Natures (दैवासुरसंपद्विभागयोग)</h3>
+                        <div class="verse-sanskrit">अभयं सत्त्वसंशुद्धिर्ज्ञानयोगव्यवस्थितिः</div>
+                        <div class="verse-translation">"Fearlessness, purification of one's existence, cultivation of spiritual knowledge, charity, self-control, performance of sacrifice, study of the Vedas, austerity, simplicity..." (qualities of divine nature)</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Divine vs. Demoniac Coding Qualities</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Recognize and cultivate "divine" qualities in your coding practice: fearlessness in tackling complex problems and admitting mistakes, purity in code (cleanliness, correctness, lack of hidden bugs), a relentless quest for knowledge, generosity in sharing insights (mentoring, open source), self-control over bad habits (procrastination, cutting corners, over-engineering). Avoid "demoniac" traits like arrogance, anger (at code or colleagues), ignorance, and dishonesty in your development practices.</p>
+                            <div class="interactive-code" id="divineNatureCode">// Promoting divine coding qualities and avoiding demoniac ones
+function cultivateDivineQualities() {
+  console.log("Embracing divine qualities in coding:");
+  console.log("- Fearlessness (in refactoring, learning new tech, asking for help)");
+  console.log("- Purity (clean code, thorough testing, ethical considerations)");
+  console.log("- Knowledge (continuous learning, deep understanding)");
+  console.log("- Generosity (mentoring, open source contributions, helpful code reviews)");
+  console.log("- Self-control (avoiding shortcuts, managing time, disciplined debugging)");
+  console.log("Avoiding demoniac traits: arrogance, anger, dishonesty, laziness.");
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('divineNatureCode')">Cultivate Divine Code</button>
+                            <div id="divineNatureCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Cultivating Qualities</h4>
+                            <p>Identify one "divine" quality you want to cultivate more in your programming (e.g., patience, attention to detail, courage to admit mistakes, humility). Then, identify one "demoniac" tendency you want to reduce (e.g., imposter syndrome, perfectionism that paralyzes, overconfidence, blaming others). Plan a small, actionable step for each this week.</p>
+                            <textarea id="divineNatureReflectionInput" class="code-editor-input" placeholder="My quality cultivation plan..."></textarea>
+                            <button class="chapter-button" onclick="planQualityCultivation()">Plan Cultivation</button>
+                            <div id="divineNatureReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter17" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 17: The Divisions of Faith (श्रद्धात्रयविभागयोग)</h3>
+                        <div class="verse-sanskrit">त्रिविधा भवति श्रद्धा देहिनां सा स्वभावजा</div>
+                        <div class="verse-translation">"According to the mode of nature one has acquired, a living entity develops a particular kind of faith."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">Faith in Programming Paradigms</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">Our "faith" in programming paradigms (e.g., OOP, Functional, Agile, Waterfall, specific languages/frameworks) is deeply influenced by our Gunas. <em>Sattvic faith</em> is in principles that lead to robust, maintainable, secure, and ethical software; it is based on sound reasoning and empirical evidence. <em>Rajasic faith</em> is in quick fixes, trendy tools, or solutions that bring personal glory or rapid but superficial results. <em>Tamasic faith</em> is in outdated methods, superstition about technology, resistance to best practices, or a fundamental lack of belief in one's ability to learn and improve. Cultivate Sattvic faith in sound engineering principles and continuous improvement.</p>
+                            <div class="interactive-code" id="faithCode">// Conceptual types of "faith" in programming approaches
+function assessProgrammingFaith(approach) {
+  if (approach === 'cleanArchitectureAndComprehensiveTests') console.log("Sattvic Faith: Focus on enduring principles and quality.");
+  else if (approach === 'rapidMVPNoRefactorAndIgnoringTechDebt') console.log("Rajasic Faith: Driven by immediate outcome and personal ambition.");
+  else if (approach === 'stuckInOldWaysAndResistingLearning') console.log("Tamasic Faith: Resistance to evolution and improvement.");
+  else console.log("Unclassified faith. Reflect on underlying motivations.");
+}
+// Example usage:
+// assessProgrammingFaith('cleanArchitectureAndComprehensiveTests');
+// assessProgrammingFaith('rapidMVPNoRefactorAndIgnoringTechDebt');
+// assessProgrammingFaith('stuckInOldWaysAndResistingLearning');
+</div>
+                            <button class="practice-button" onclick="runConceptualCode('faithCode')">Assess Your Faith</button>
+                            <div id="faithCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">Examining Your Faith</h4>
+                            <p>What programming methodologies or technologies do you have strong "faith" in? Where does this faith come from (e.g., personal success, community influence, deep understanding)? Is it based on sound principles, or simply convenience or trend? How can you ensure your faith is Sattvic and promotes true progress?</p>
+                            <textarea id="faithReflectionInput" class="code-editor-input" placeholder="Reflect on your programming faith..."></textarea>
+                            <button class="chapter-button" onclick="examineProgrammingFaith()">Examine My Faith</button>
+                            <div id="faithReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chapter18" class="content-section">
+                    <div class="chapter-content">
+                        <h3 style="color: #ffd700; margin-bottom: 1.5rem;">Chapter 18: The Yoga of Liberation (मोक्षसंन्यासयोग)</h3>
+                        <div class="verse-sanskrit">सर्वधर्मान् परित्यज्य मामेकं शरणं व्रज</div>
+                        <div class="verse-translation">"Abandon all varieties of dharma and simply surrender unto Me."</div>
+                        <div class="programming-application">
+                            <h4 style="color: #4ecdc4;">The Ultimate Surrender in Code</h4>
+                            <p style="color: #d1d1e0; line-height: 1.8;">True liberation in programming comes from surrendering the ego of being "the brilliant coder." When you let go of attachment to outcomes, personal glory, rigid methods, or even specific solutions, you become a pure instrument of the code itself. The best code often seems to write itself through a clear channel, with the programmer merely facilitating its manifestation. This is the ultimate "pull request" to universal consciousness – letting the divine flow through your fingers.</p>
+                            <div class="interactive-code" id="surrenderCode">// Simulating complete surrender in a coding task
+function completeSurrenderToCode(task) {
+  removeEgoAttachmentToCode();
+  releaseAttachmentToOutcome(); // Success, failure, praise, criticism
+  becomeInstrumentForSolution();
+  console.log(`Task '${task}' completed through surrendered flow. The code manifests effortlessly.`);
+  // This state allows for highest creativity and problem-solving without personal burden.
+}</div>
+                            <button class="practice-button" onclick="runConceptualCode('surrenderCode')">Simulate Surrender</button>
+                            <div id="surrenderCodeOutput" class="interactive-code-output"></div>
+                        </div>
+                        <div class="practice-exercise">
+                            <h4 style="color: #ff6b6b;">The Final Practice: Surrender</h4>
+                            <p>For your next coding session, practice complete surrender. Let go of all expectations, self-judgment, and attachment to the outcome. Simply observe the code flowing through you, allowing the solution to manifest. What does this feel like?</p>
+                            <textarea id="surrenderReflectionInput" class="code-editor-input" placeholder="Reflect on your surrender experience..."></textarea>
+                            <button class="chapter-button" onclick="practiceCompleteSurrender()">Practice Surrender</button>
+                            <div id="surrenderReflectionOutput" class="interactive-code-output"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="code-challenges" class="tab-content">
+                <div class="challenge-card">
+                    <h4>Challenge 1: Karma Yoga Refactoring</h4>
+                    <p>Take an old, messy function in your codebase (or a sample). Refactor it for clarity and efficiency, but without concern for whether anyone will immediately notice or praise your work. Focus purely on the action of improving the code.</p>
+                    <pre><code>// Before (example):
+function processData(d) {
+    let result = [];
+    // ... complex, unreadable logic ...
+    for(let i=0; i<d.length; i++) { /* ... */ }
+    // ...
+    return result;
+}
+
+// After (Karma Yoga refactoring):
+function processDataCleanly(dataItems) {
+    // Break into smaller, pure functions
+    // Add clear variable names and comments
+    // ... focus on the _process_ of clean code ...
+    return dataItems.map(item => transform(item)).filter(isValid);
+}
+                    </code></pre>
+                    <button class="run-challenge-button" onclick="alert('Challenge accepted! Focus on the action of refactoring, not the immediate outcome.')">Begin Challenge</button>
+                </div>
+
+                <div class="challenge-card">
+                    <h4>Challenge 2: Dhyana Debugging</h4>
+                    <p>When encountering a tricky bug, instead of panicking, approach it with a meditative mind. Clear your workspace, take a few deep breaths, and systematically trace the code with full presence, detaching from frustration or desire for a quick fix.</p>
+                    <pre><code>// Debugging with Dhyana (mindful approach):
+function debugMindfully(bugReport) {
+    console.log("🐛 Entering Dhyana Debugging Mode...");
+    clearDistractions();
+    deepBreaths(5);
+    try {
+        traceExecution(bugReport.reproductionSteps);
+        // Observe, don't judge or get frustrated
+        identifyRootCause();
+        proposeSolution();
+    } catch (e) {
+        console.error("Remain calm, observe the error:", e);
+    }
+    console.log("✅ Bug fixing meditation complete. Solution found.");
+}
+                    </code></pre>
+                    <button class="run-challenge-button" onclick="alert('Challenge accepted! Approach your next bug with calm, focused attention.')">Begin Challenge</button>
+                </div>
+
+                <div class="challenge-card">
+                    <h4>Challenge 3: Vishvarupa Integration</h4>
+                    <p>Explore a new API or library completely outside your usual domain. Attempt to integrate a small part of it into a personal project, appreciating its "multifarious forms" and how it expands the universal landscape of technology.</p>
+                    <pre><code>// Universal Form Integration (example):
+function integrateNewTech(newApiEndpoint, yourProject) {
+    console.log(`🌍 Exploring ${newApiEndpoint}...`);
+    try {
+        fetch(newApiEndpoint)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Beholding a new form:", data);
+                // Integrate a small, experimental feature
+                yourProject.addFeature(data.someValue);
+                console.log("Small part of the universal form integrated successfully!");
+            });
+    } catch (e) {
+        console.error("Embrace the vastness, even when integration is challenging:", e);
+    }
+}
+                    </code></pre>
+                    <button class="run-challenge-button" onclick="alert('Challenge accepted! Broaden your horizons and appreciate the vastness of tech.')">Begin Challenge</button>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 The Way of Code. All rights reserved. 🪷</p>
+        </footer>
+    </div>
+
+    <script>
+        // JavaScript for tab switching
+        function showTab(tabId, event) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        // JavaScript for sub-navigation (Gita Chapters)
+        function showGitaChapter(chapterNum, event) {
+            const chapters = document.querySelectorAll('.content-section');
+            chapters.forEach(chapter => chapter.classList.remove('active'));
+            document.getElementById(`chapter${chapterNum}`).classList.add('active');
+
+            const buttons = document.querySelectorAll('.sub-nav-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        // Floating Lotus Elements (animation not tied to Gita chapters directly)
+        const floatingElementsContainer = document.getElementById('floatingElements');
+        for (let i = 0; i < 10; i++) {
+            const lotus = document.createElement('div');
+            lotus.className = 'floating-lotus';
+            lotus.style.left = `${Math.random() * 100}vw`;
+            lotus.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            lotus.style.animationDelay = `${Math.random() * 5}s`;
+            lotus.textContent = '🪷'; // Add lotus emoji
+            floatingElementsContainer.appendChild(lotus);
+        }
+
+        // Conceptual Code Runner (for interactive code blocks)
+        function runConceptualCode(codeId) {
+            const codeBlock = document.getElementById(codeId);
+            const outputBlock = document.getElementById(codeId + 'Output');
+            outputBlock.textContent = `Running conceptual code for ${codeId}...`;
+            // In a real application, you'd execute or parse the code here.
+            // For this conceptual demo, we just simulate an output.
+            setTimeout(() => {
+                let simulatedOutput = '';
+                if (codeId === 'arjunaDilemmaCode') {
+                    simulatedOutput = "Dilemma simulated: Choosing between quick fix and proper solution. Observe the internal conflict.";
+                } else if (codeId === 'eternalCode') {
+                    simulatedOutput = "Focus shifted to eternal principles: Readability, maintainability, scalability. Feels solid.";
+                } else if (codeId === 'karmaYogaCode') {
+                    simulatedOutput = "Code committed without checking metrics immediately. Sense of freedom in action achieved.";
+                } else if (codeId === 'avatarCode') {
+                    simulatedOutput = "Avatar mission activated: Identifying technological imbalance to restore ethical harmony.";
+                } else if (codeId === 'renunciationCode') {
+                    simulatedOutput = "Simulating detachment: Deciding to delete unused module, not just comment out. Liberation!";
+                } else if (codeId === 'dhyanaCode') {
+                    simulatedOutput = "Mindful coding session started: Distractions minimized, focus deepened. Productivity soared.";
+                } else if (codeId === 'jnanaCode') {
+                    simulatedOutput = "Exploring layers: Understanding the fundamental architecture of the system. Deeper insight gained.";
+                } else if (codeId === 'aksharaCode') {
+                    simulatedOutput = "Contemplating essence: Focusing on algorithms and data structures beyond syntax. Clarity achieved.";
+                } else if (codeId === 'rajaVidyaCode') {
+                    simulatedOutput = "Visualizing connections: Tracing data flow, revealing hidden dependencies. System mastery advanced.";
+                } else if (codeId === 'vibhutiCode') {
+                    simulatedOutput = "Recognizing glories: Appreciating the elegance and impact of well-crafted code. Inspiration gained.";
+                } else if (codeId === 'vishvarupaCode') {
+                    simulatedOutput = "Contemplating vastness: Acknowledging the immense and diverse landscape of technology. Humility and wonder.";
+                } else if (codeId === 'bhaktiCode') {
+                    simulatedOutput = "Devotional coding in progress: Project infused with love and care. Joy in creation.";
+                } else if (codeId === 'kshetraCode') {
+                    simulatedOutput = "Observing the code-field: Distinguishing between the code and the conscious observer. Clearer debugging.";
+                } else if (codeId === 'gunasCode') {
+                    simulatedOutput = "Guna analysis complete: Identified Sattvic, Rajasic, Tamasic influences in current project. Strategy for balance.";
+                } else if (codeId === 'purushottamaCode') {
+                    simulatedOutput = "Tech tree explored: Focused on understanding the roots, not just the branches. Deeper foundational knowledge.";
+                } else if (codeId === 'divineNatureCode') {
+                    simulatedOutput = "Divine qualities cultivated: Fearlessness, purity, and generosity in coding. Positive impact on team.";
+                } else if (codeId === 'faithCode') {
+                    simulatedOutput = "Programming faith assessed: Prioritizing robust, ethical principles. Stronger, more sustainable development.";
+                } else if (codeId === 'surrenderCode') {
+                    simulatedOutput = "Surrender simulated: Ego released, flow state achieved. Code seems to write itself effortlessly.";
+                }
+                outputBlock.textContent = simulatedOutput;
+                // Add a temporary highlight effect to the output
+                outputBlock.style.backgroundColor = '#2a3a5a';
+                setTimeout(() => {
+                    outputBlock.style.backgroundColor = '';
+                }, 500);
+            }, 800);
+        }
+
+        // Specific reflection functions (as previously defined)
+        function recordDilemma() {
+            const input = document.getElementById('dilemmaReflectionInput').value;
+            const output = document.getElementById('dilemmaReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Your dilemma recorded: "${input}". Reflect on the principles from Chapter 1.`;
+            } else {
+                output.textContent = "Please describe your dilemma.";
+            }
+        }
+
+        function identifyEternalPrinciples() {
+            const input = document.getElementById('eternalPrinciplesInput').value;
+            const output = document.getElementById('eternalPrinciplesOutput');
+            if (input.trim()) {
+                output.textContent = `Eternal principles identified: "${input}". These form the bedrock of your coding practice.`;
+            } else {
+                output.textContent = "Please list your eternal principles.";
+            }
+        }
+
+        function startKarmaYogaChallenge() {
+            const input = document.getElementById('karmaYogaChallengeInput').value;
+            const output = document.getElementById('karmaYogaChallengeOutput');
+            if (input.trim()) {
+                output.textContent = `Karma Yoga Challenge initiated: "${input}". Focus on the action, not the outcome.`;
+            } else {
+                output.textContent = "Please reflect on your challenge approach.";
+            }
+        }
+
+        function discoverAvatarMission() {
+            const input = document.getElementById('avatarMissionInput').value;
+            const output = document.getElementById('avatarMissionOutput');
+            if (input.trim()) {
+                output.textContent = `Avatar Mission discovered: "${input}". Be the change you want to see in the tech world.`;
+            } else {
+                output.textContent = "Please describe your avatar mission.";
+            }
+        }
+
+        // New reflection functions for Chapters 5-18
+        function reflectOnRenunciation() {
+            const input = document.getElementById('renunciationReflectionInput').value;
+            const output = document.getElementById('renunciationReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Renunciation reflection: "${input}". Letting go creates space for new, better code.`;
+            } else {
+                output.textContent = "Please reflect on your attachments to code.";
+            }
+        }
+
+        function startDhyanaChallenge() {
+            const input = document.getElementById('dhyanaChallengeInput').value;
+            const output = document.getElementById('dhyanaChallengeOutput');
+            if (input.trim()) {
+                output.textContent = `Dhyana Challenge accepted: "${input}". Experience coding as meditation.`;
+            } else {
+                output.textContent = "Please reflect on your mindful coding session.";
+            }
+        }
+
+        function setJnanaGoal() {
+            const input = document.getElementById('jnanaReflectionInput').value;
+            const output = document.getElementById('jnanaReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Knowledge goal set: "${input}". Dig deep to understand the roots.`;
+            } else {
+                output.textContent = "Please set your knowledge-seeking goal.";
+            }
+        }
+
+        function reflectOnCoreLogic() {
+            const input = document.getElementById('aksharaReflectionInput').value;
+            const output = document.getElementById('aksharaReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Core logic identified: "${input}". The imperishable essence remains.`;
+            } else {
+                output.textContent = "Please describe the core logic.";
+            }
+        }
+
+        function reflectOnSystem() {
+            const input = document.getElementById('rajaVidyaReflectionInput').value;
+            const output = document.getElementById('rajaVidyaReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `System mapping reflection: "${input}". The king of knowledge reveals hidden connections.`;
+            } else {
+                output.textContent = "Please describe the system map.";
+            }
+        }
+
+        function reflectOnGlories() {
+            const input = document.getElementById('vibhutiReflectionInput').value;
+            const output = document.getElementById('vibhutiReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Code glories appreciated: "${input}". Recognize the divine potential in your creations.`;
+            } else {
+                output.textContent = "Please describe the glories of the code.";
+            }
+        }
+
+        function setExplorationGoal() {
+            const input = document.getElementById('vishvarupaReflectionInput').value;
+            const output = document.getElementById('vishvarupaReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Exploration goal set: "${input}". Embrace the vastness of the technological universe.`;
+            } else {
+                output.textContent = "Please set your exploration goal.";
+            }
+        }
+
+        function startBhaktiPractice() {
+            const input = document.getElementById('bhaktiReflectionInput').value;
+            const output = document.getElementById('bhaktiReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Bhakti practice begun: "${input}". Code with love and devotion.`;
+            } else {
+                output.textContent = "Please reflect on your devotional coding.";
+            }
+        }
+
+        function reflectOnKshetra() {
+            const input = document.getElementById('kshetraReflectionInput').value;
+            const output = document.getElementById('kshetraReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Kshetra-Kshetrajna reflection: "${input}". Clear distinction leads to clarity.`;
+            } else {
+                output.textContent = "Please reflect on the code as a field.";
+            }
+        }
+
+        function reflectOnGunas() {
+            const input = document.getElementById('gunasReflectionInput').value;
+            const output = document.getElementById('gunasReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Guna self-assessment: "${input}". Cultivate Sattva for harmonious coding.`;
+            } else {
+                output.textContent = "Please reflect on your Guna self-assessment.";
+            }
+        }
+
+        function setPurushottamaGoal() {
+            const input = document.getElementById('purushottamaReflectionInput').value;
+            const output = document.getElementById('purushottamaReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Root-level learning goal set: "${input}". Understand the foundational principles.`;
+            } else {
+                output.textContent = "Please set your root-level learning goal.";
+            }
+        }
+
+        function planQualityCultivation() {
+            const input = document.getElementById('divineNatureReflectionInput').value;
+            const output = document.getElementById('divineNatureReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Quality cultivation plan: "${input}". Elevate your coding character.`;
+            } else {
+                output.textContent = "Please describe your quality cultivation plan.";
+            }
+        }
+
+        function examineProgrammingFaith() {
+            const input = document.getElementById('faithReflectionInput').value;
+            const output = document.getElementById('faithReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Programming faith examined: "${input}". Ensure your faith leads to true progress.`;
+            } else {
+                output.textContent = "Please reflect on your programming faith.";
+            }
+        }
+
+        function practiceCompleteSurrender() {
+            const input = document.getElementById('surrenderReflectionInput').value;
+            const output = document.getElementById('surrenderReflectionOutput');
+            if (input.trim()) {
+                output.textContent = `Surrender practice reflected: "${input}". Let the code flow through you effortlessly.`;
+            } else {
+                output.textContent = "Please reflect on your surrender experience.";
+            }
+        }
+
+        // Developer's Daily Sadhana Timer (Conceptual)
+        let timerInterval;
+        let seconds = 0;
+        let isRunning = false;
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timerInterval = setInterval(updateTimer, 1000);
+                document.getElementById('startTimerButton').disabled = true;
+                document.getElementById('pauseTimerButton').disabled = false;
+                document.getElementById('resetTimerButton').disabled = false;
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timerInterval);
+                document.getElementById('startTimerButton').disabled = false;
+                document.getElementById('pauseTimerButton').disabled = true;
+            }
+        }
+
+        function resetTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            seconds = 0;
+            updateTimerDisplay();
+            document.getElementById('startTimerButton').disabled = false;
+            document.getElementById('pauseTimerButton').disabled = true;
+            document.getElementById('resetTimerButton').disabled = true;
+        }
+
+        function updateTimer() {
+            seconds++;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+
+            const formattedTime =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(remainingSeconds).padStart(2, '0');
+
+            // Ensure timerDisplay element exists before trying to set its textContent
+            const timerDisplayElement = document.getElementById('timerDisplay');
+            if (timerDisplayElement) {
+                timerDisplayElement.textContent = formattedTime;
+            }
+        }
+
+        // --- Three.js Solar System Graphics ---
+        let scene, camera, renderer, starfield;
+        const planets = [];
+        let mouseX = 0, mouseY = 0;
+        let targetRotationX = 0, targetRotationY = 0;
+        let isMouseDown = false;
+        let lastMouseX = 0, lastMouseY = 0;
+
+        function init3D() {
+            const container = document.getElementById('three-js-canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.z = 10; // Move camera further back to see the starfield
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // alpha: true for transparent background
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+
+            // Starfield (Universe)
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 10000;
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+            const color = new THREE.Color();
+
+            for (let i = 0; i < starCount; i++) {
+                // Random position within a sphere
+                const x = (Math.random() - 0.5) * 200;
+                const y = (Math.random() - 0.5) * 200;
+                const z = (Math.random() - 0.5) * 200;
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+
+                // Random color for stars (subtle variations)
+                color.setHSL(Math.random() * 0.2 + 0.5, 0.5, Math.random() * 0.5 + 0.5); // Warm white to light yellow
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const starMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true, // Use colors from attribute
+                transparent: true,
+                blending: THREE.AdditiveBlending, // For a glowing effect
+                sizeAttenuation: true
+            });
+
+            starfield = new THREE.Points(starGeometry, starMaterial);
+            scene.add(starfield);
+
+            // Planets (Orbiting Spheres) - now orbiting the center of the starfield
+            const planetData = [
+                { radius: 0.3, color: 0xFFD700, orbitRadius: 3.5, orbitSpeed: 0.015, emissive: 0xFFD700, emissiveIntensity: 0.7 }, // Gold, brighter
+                { radius: 0.25, color: 0x4ECDC4, orbitRadius: 5.0, orbitSpeed: 0.01, emissive: 0x4ECDC4, emissiveIntensity: 0.6 }, // Teal, brighter
+                { radius: 0.2, color: 0xFF6B6B, orbitRadius: 6.5, orbitSpeed: 0.007, emissive: 0xFF6B6B, emissiveIntensity: 0.5 }  // Red, brighter
+            ];
+
+            planetData.forEach(data => {
+                const planetGeometry = new THREE.SphereGeometry(data.radius, 32, 32); // Increased segments for smoother spheres
+                const planetMaterial = new THREE.MeshStandardMaterial({
+                    color: data.color,
+                    emissive: data.emissive,
+                    emissiveIntensity: data.emissiveIntensity,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+                planet.orbitRadius = data.orbitRadius;
+                planet.orbitSpeed = data.orbitSpeed;
+                planets.push(planet);
+                scene.add(planet);
+            });
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+
+            // Event Listeners for mouse interaction
+            container.addEventListener('mousedown', onMouseDown, false);
+            container.addEventListener('mousemove', onMouseMove, false);
+            container.addEventListener('mouseup', onMouseUp, false);
+            container.addEventListener('mouseleave', onMouseUp, false); // End drag if mouse leaves container
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('three-js-canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function onMouseDown(event) {
+            isMouseDown = true;
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (!isMouseDown) return;
+            const deltaX = event.clientX - lastMouseX;
+            const deltaY = event.clientY - lastMouseY;
+
+            // Adjust target rotation based on mouse movement
+            targetRotationY += deltaX * 0.005;
+            targetRotationX += deltaY * 0.005;
+
+            // Clamp vertical rotation to prevent flipping
+            targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotationX));
+
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+        }
+
+        function onMouseUp(event) {
+            isMouseDown = false;
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+
+            // Rotate the entire starfield and planets together
+            starfield.rotation.y += (targetRotationY - starfield.rotation.y) * 0.1;
+            starfield.rotation.x += (targetRotationX - starfield.rotation.x) * 0.1;
+
+            planets.forEach((planet, index) => {
+                const angle = Date.now() * planet.orbitSpeed + index * Math.PI / 2; // Offset for distinct orbits
+                planet.position.x = Math.cos(angle) * planet.orbitRadius;
+                planet.position.z = Math.sin(angle) * planet.orbitRadius;
+                planet.position.y = Math.sin(angle * 0.5) * (planet.orbitRadius * 0.2); // Slight vertical wobble
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // Initialize timer display and set default active tab/chapter on load
+        window.onload = function () {
+            // Set 'sadhana' as the default active tab
+            showTab('sadhana', { currentTarget: document.querySelector('.tab-button[onclick="showTab(\'sadhana\', event)"]') });
+            // The timer is now directly within the 'sadhana' tab, so it will be in the DOM.
+            updateTimerDisplay();
+
+            // Initialize and start 3D animation
+            init3D();
+            animate3D();
+
+            // Set 'chapter1' as the default active chapter within 'programmer-gita' when that tab is eventually selected
+            // This ensures that when the user clicks on 'Programmer\'s Gita', Chapter 1 is active.
+            // We don't call showGitaChapter immediately on DOMContentLoaded if programmer-gita isn't the default tab.
+            // The initial state of programmer-gita will be set when its tab button is clicked.
+        };
+    </script>
+</body>
+</html>
